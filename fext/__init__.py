@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
 
-if __name__ == '__main__':
-    main()
+import logging
+
+class NullHandler(logging.Handler):  # pragma: no cover
+    def emit(self, record):
+        pass
+
+logging.getLogger('fext').addHandler(NullHandler())

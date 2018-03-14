@@ -11,21 +11,27 @@ def generate_filename(output_folder, prefix, number):
 
 @click.command()
 @click.argument('src', type=click.Path(exists=True))
-@click.option('--output', '-o', default='', type=click.Path(exists=True))
-@click.option('--interval', '-i', default=10)
+@click.option('--folder', '-f', default='', type=click.Path(exists=True))
+@click.option('--interval', '-i', default=10.0)
 @click.option('--prefix', '-p', default=None)
-def main(src, output, interval, prefix):
+@click.option('--dry-run', '-d', is_flag=True)
+def main(src, folder, interval, prefix, dry_run):
     video = Video(src)
-    number_images = len(video) // (interval * video.fps)
+    number_images = int(len(video) // (interval * video.fps))
     prefix = prefix or os.path.basename(src)
 
     click.echo('Video length: {}'.format(video.time))
     click.echo('Number of images: {}'.format(number_images))
+    click.echo('Dimensions: {} H x {} W'.format(video.height, video.width))
 
-    with click.progressbar(length=len(video), label='Generating images') as bar:
-        for pos, image in video.frames(interval):
-            filepath = generate_filename(output, prefix, video.curr_frame)
-            cv.imwrite(filepath, image)
-            bar.update(video.curr_frame)
+    label = 'Generating images'
 
+    if not dry_run:
+        with click.progressbar(length=len(video), label=label) as bar:
+            for pos, image in video.frames(interval):
+                filepath = generate_filename(folder, prefix, pos)
+                cv.imwrite(filepath, image)
+                bar.update(pos)
+
+    click.echo('Releasing video...')
     video.release()
