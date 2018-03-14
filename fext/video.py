@@ -36,11 +36,10 @@ class Video(cv.VideoCapture):
     def time(self):
         return str(datetime.timedelta(seconds=self.seconds))
 
-    def frames(self, time_interval):
-        frame_interval = time_interval * self.fps
+    def frames(self, frame_interval):
         while True:
             success, image = self.read()
             if not success:
                 return
             yield (self.curr_frame, image)
-            self.curr_frame += frame_interval
+            self.curr_frame += frame_interval - 1
